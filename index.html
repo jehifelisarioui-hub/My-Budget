@@ -1,22 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MY BUDGET</title>
-</head>
-<body>
-    <div id="app">
-  <h2>My Budget</h2>
-  <h1 id="bal">0</h1>
-  
-  <input type="text" id="desc" placeholder="Item">
-  <input type="number" id="amt" placeholder="Amount">
-  <button onclick="add()">Add</button>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="manifest" href="manifest.json">
+        <title>Budget</title>
+    </head>
+    <style>
+        body{
+            background-color: antiquewhite;
+            height: 630px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        }
+        .box{
+            background-color: burlywood;
+            padding: 30px;
+    width: 450px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 30px rgb(210, 87, 87);
+        }
+        .box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #160b0b;
+    }
+    .box h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #000000;
+    }
+    .box input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 10px;
+    border: 1px solid #000000ff;
+    outline: none;
+    font-size: 14px;
+}
+.box button[type="submit"] {
+    background: grey;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 15px;
+     width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+        
 
-  <ul id="list"></ul>
-</div>
-<script>
+    </style>
+    <body>
+        <div class="box">
+
+            <div class="app">
+                <h2>My Budget</h2>
+                <h1 id="bal">0</h1>
+
+                <input type="text" id="desc" placeholder="Item">
+                <input type="number" id="amt" placeholder="Amount">
+                <button type="submit" onclick="add()">Add</button>
+
+                <ul class="l" id="list"></ul>
+            </div>
+        </div>
+
+        <script>
     let total = 0;
 const b = document.getElementById('bal');
 const d = document.getElementById('desc');
@@ -50,6 +106,16 @@ function add() {
     
   }
 }
+if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(() => {
+            console.log("ayos! rehistro as service worker");
+          })
+          .catch((error) => {
+            console.log("Registration failed: ", error);
+          });
+      }
 </script>
-</body>
+    </body>
 </html>
