@@ -14,6 +14,7 @@
             --orange: #ff6600;
             --orange-glow: rgba(255, 102, 0, 0.4);
             --text-gray: #a0a0a0;
+            --neon-blue: #00f2ff;
         }
 
         body { 
@@ -22,7 +23,8 @@
             color: #fff;
             margin: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             padding: 40px 20px;
         }
         
@@ -36,6 +38,7 @@
             border-top: 4px solid var(--orange);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
             position: relative;
+            margin-bottom: 20px;
         }
 
         .c::before {
@@ -61,10 +64,29 @@
             font-weight: 900;
             font-size: 3rem;
             text-align: left;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             color: #fff;
             text-shadow: 0 0 15px var(--orange-glow);
         }
+
+        .wallet-display {
+            font-size: 0.9rem;
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-wallet {
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+
+        .edit-wallet:hover { opacity: 1; color: #fff; }
 
         .peso-sign { font-size: 1.8rem; color: var(--orange); margin-right: 5px; }
 
@@ -84,7 +106,7 @@
 
         input:focus { border-color: var(--orange); box-shadow: 0 0 10px var(--orange-glow); }
 
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
 
         button { 
             padding: 14px; 
@@ -115,7 +137,24 @@
 
         .clr:hover { color: #ff3333; border-color: #ff3333; background: rgba(255, 0, 0, 0.05); }
 
-        ul { list-style: none; padding: 0; margin-top: 30px; }
+        .advisory-box {
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            padding: 15px;
+            font-size: 0.85rem;
+            color: var(--neon-blue);
+            margin-top: 20px;
+            border-radius: 4px;
+            line-height: 1.4;
+        }
+
+        .report-section {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+
+        ul { list-style: none; padding: 0; margin-top: 10px; }
 
         li { 
             padding: 14px; 
@@ -124,28 +163,25 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            transition: 0.3s;
         }
-
-        li:hover { background: rgba(255, 102, 0, 0.05); }
 
         .item-row { display: flex; align-items: center; gap: 10px; font-weight: 500; color: #ddd; }
         .item-row i { color: var(--orange); font-size: 0.8rem; }
-
         .amt-row { font-weight: 700; color: #fff; }
-        
         .r { color: #444; cursor: pointer; margin-left: 10px; transition: 0.2s; }
         .r:hover { color: var(--orange); transform: rotate(90deg); }
-
-        @media (max-width: 400px) {
-            .btn-grid { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
 
 <div class="c">
-    <h3> EXPENSE_LOG</h3>
+    <h3> WALLET_BALANCE</h3>
+    <div class="wallet-display">
+        <span>CREDITS: &#8369;<span id="w_bal">0.00</span></span>
+        <i class="fas fa-edit edit-wallet" onclick="updateWalletBase()" title="Update Credits"></i>
+    </div>
+
+    <h3> TOTAL_EXPENSES</h3>
     <div class="amt-display"><span class="peso-sign">&#8369;</span><span id="t">0.00</span></div>
     
     <input type="text" id="k" placeholder="ITEM_ID">
@@ -153,10 +189,17 @@
 
     <div class="btn-grid">
         <button onclick="fn_a()"><i class="fas fa-bolt"></i> ADD</button>
-        <button class="clr" onclick="fn_c()">REMOVE</button>
+        <button class="clr" onclick="fn_c()">RESET</button>
     </div>
 
-    <ul id="l"></ul>
+    <div id="adv" class="advisory-box">
+        <i class="fas fa-microchip"></i> SYSTEM_READY...
+    </div>
+
+    <div class="report-section">
+        <h3> TRANSACTION_HISTORY</h3>
+        <ul id="l"></ul>
+    </div>
 </div>
 
 <script>
@@ -168,10 +211,29 @@
     const _l = document.getElementById('l');
     const _k = document.getElementById('k');
     const _v = document.getElementById('v');
+    const _w = document.getElementById('w_bal');
+    const _adv = document.getElementById('adv');
+
+
+    let walletBase = parseFloat(localStorage.getItem('wallet_base')) || 10000.00;
+
+    function updateWalletBase() {
+        let newVal = prompt("ENTER NEW WALLET CREDIT AMOUNT:", walletBase);
+        if (newVal !== null && !isNaN(newVal)) {
+            walletBase = parseFloat(newVal);
+            localStorage.setItem('wallet_base', walletBase);
+            fn_s(); 
+        }
+    }
 
     async function fn_s() {
         let { data: rs, error: err } = await db.from('budget_db').select('*');
-        if (err) return;
+        
+        if (err) {
+            rs = JSON.parse(localStorage.getItem('cached_expenses')) || [];
+        } else {
+            localStorage.setItem('cached_expenses', JSON.stringify(rs));
+        }
 
         _l.innerHTML = "";
         let total = 0;
@@ -187,7 +249,11 @@
             `;
             _l.appendChild(row);
         });
+        
         _t.innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
+        _w.innerText = (walletBase - total).toLocaleString(undefined, {minimumFractionDigits: 2});
+        
+        updateAdvisory(total, walletBase);
     }
 
     async function fn_a() {
@@ -206,17 +272,25 @@
     }
 
     async function fn_c() {
-        if(confirm("Are you Sure?!!")) {
+        if(confirm("DANGER: This will wipe all logs. Proceed?")) {
             await db.from('budget_db').delete().neq('id', 0);
             fn_s();
         }
+    }
+
+    function updateAdvisory(total, wallet) {
+        const usagePercent = (total / wallet) * 100;
+        let msg = "";
+        if (usagePercent > 90) msg = "CRITICAL: Funds depleted. Stop all spending.";
+        else if (usagePercent > 70) msg = "WARNING: Burn rate high. Suggest extreme frugality.";
+        else msg = "SYSTEM: Budget health optimal.";
+        _adv.innerHTML = <i class="fas fa-microchip"></i> ANALYSIS: ${msg};
     }
 
     fn_s();
 
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/service-worker.js")
-        .then(() => console.log("OK na "))
         .catch((e) => console.log(e));
     }
 </script>
