@@ -284,7 +284,7 @@
         if (usagePercent > 90) msg = "CRITICAL: Funds depleted. Stop all spending.";
         else if (usagePercent > 70) msg = "WARNING: Burn rate high. Suggest extreme frugality.";
         else msg = "SYSTEM: Budget health optimal.";
-        _adv.innerHTML = <i class="fas fa-microchip"></i> ANALYSIS: ${msg};
+        _adv.innerHTML = `<i class="fas fa-microchip"></i> ANALYSIS: ${msg}`;
     }
 
     fn_s();
